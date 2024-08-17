@@ -1,0 +1,118 @@
+services:
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: 'nginx'
+    restart: unless-stopped
+      # ports:
+      # These ports are in format <host-port>:<container-port>
+      # - '80:80' # Public HTTP Port
+      # - '443:443' # Public HTTPS Port
+      # - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+
+    # Uncomment the next line if you uncomment anything in the section
+    # environment:
+      # Uncomment this if you want to change the location of
+      # the SQLite DB file within the container
+      # DB_SQLITE_FILE: "/data/database.sqlite"
+
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+
+    volumes:
+      - /home/chun/docker/nginx/data:/data
+      - /home/chun/docker/nginx/letsencrypt:/etc/letsencrypt
+      - /home/chun/docker/nginx/custom:/etc/nginx/conf.d/custom
+    network_mode: host
+
+  wetty111:
+    image: 'wettyoss/wetty'
+    container_name: 'wetty111'
+    restart: unless-stopped
+    ports:
+      - '3111:3000'
+    command: --ssh-host=192.168.2.111
+
+  wetty121:
+    image: 'wettyoss/wetty'
+    container_name: 'wetty121'
+    restart: unless-stopped
+    ports:
+      - '3121:3000'
+    command: --ssh-host=192.168.2.121
+
+  home-assistant:
+    image: 'ghcr.io/home-assistant/home-assistant:stable'
+    container_name: 'home-assistant'
+    restart: unless-stopped
+    volumes:
+      - /home/chun/docker/home-assistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    privileged: true
+    network_mode: host
+    environment:
+      DISABLE_JEMALLOC: true
+
+  nextcloud:
+    image: nextcloud
+    container_name: 'nextcloud'
+    restart: unless-stopped
+    ports:
+      - '82:80'
+    volumes:
+      - /home/chun/docker/nextcloud/config:/var/www/html/config
+      - /mnt/nas1/shared:/var/www/html/data
+    user: '1000:1000'
+    env_file:
+      - docker.env
+    environment:
+      - POSTGRES_HOST=$${POSTGRES_HOST}
+      - POSTGRES_DB=$${POSTGRES_DB}
+      - POSTGRES_USER=$${POSTGRES_USER}
+      - POSTGRES_PASSWORD=$${POSTGRES_PASSWORD}
+    links:
+      - nextcloud-db
+      - nextcloud-redis
+  nextcloud-db:
+    image: postgres:16.3
+    container_name: 'nextcloud-db'
+    restart: unless-stopped
+    ports:
+      - '5482:5432'
+    volumes:
+      - /home/chun/docker/nextcloud-db:/var/lib/postgresql/data
+    env_file:
+      - docker.env
+    environment:
+      - POSTGRES_DB=$${POSTGRES_DB}
+      - POSTGRES_USER=$${POSTGRES_USER}
+      - POSTGRES_PASSWORD=$${POSTGRES_PASSWORD}
+  nextcloud-redis:
+    image: redis
+    container_name: 'nextcloud-redis'
+    restart: unless-stopped
+    ports:
+      - '6389:6379'
+    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
+    env_file:
+      - docker.env
+
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: 'plex'
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /home/chun/docker/plex/config:/config
+      - /mnt/nas1/shared/chun/files/Music:/media/TV
+      - /mnt/nas1/shared/chun/files/Music:/media/Movies
+      - /mnt/nas1/shared/chun/files/Music:/media/Music
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - VERSION=docker
+      - PLEX_CLAIM= #optional
+
