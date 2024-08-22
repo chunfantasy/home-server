@@ -116,3 +116,20 @@ services:
       - VERSION=docker
       - PLEX_CLAIM= #optional
 
+  nfs:
+    image: erichough/nfs-server
+    container_name: nfs
+    restart: unless-stopped
+    volumes:
+      - /home/chun/Shared:/media/Shared
+      - /lib/modules:/lib/modules
+      - /home/chun/docker/nfs/exports.txt:/etc/exports:ro
+        #environment:
+        #- NFS_EXPORT_0=/media/Shared *
+    ports:
+      - '2049:2049'
+    cap_add:
+      - SYS_ADMIN
+      - SYS_MODULE
+    privileged: true
+    network_mode: host
