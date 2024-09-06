@@ -56,7 +56,7 @@ services:
       DISABLE_JEMALLOC: true
 
   nextcloud:
-    image: nextcloud
+    image: nextcloud:28
     container_name: 'nextcloud'
     restart: unless-stopped
     ports:
@@ -65,39 +65,33 @@ services:
       - /home/chun/docker/nextcloud/config:/var/www/html/config
       - /mnt/nas1/shared:/var/www/html/data
     user: '1000:1000'
-    env_file:
-      - docker.env
     environment:
-      - POSTGRES_HOST=$${POSTGRES_HOST}
-      - POSTGRES_DB=$${POSTGRES_DB}
-      - POSTGRES_USER=$${POSTGRES_USER}
-      - POSTGRES_PASSWORD=$${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     links:
       - nextcloud-db
       - nextcloud-redis
   nextcloud-db:
-    image: postgres:16.3
+    image: postgres:15
     container_name: 'nextcloud-db'
     restart: unless-stopped
     ports:
       - '5482:5432'
     volumes:
       - /home/chun/docker/nextcloud-db:/var/lib/postgresql/data
-    env_file:
-      - docker.env
     environment:
-      - POSTGRES_DB=$${POSTGRES_DB}
-      - POSTGRES_USER=$${POSTGRES_USER}
-      - POSTGRES_PASSWORD=$${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   nextcloud-redis:
     image: redis
     container_name: 'nextcloud-redis'
     restart: unless-stopped
     ports:
       - '6389:6379'
-    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
-    env_file:
-      - docker.env
+    command: /bin/sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
 
   plex:
     image: lscr.io/linuxserver/plex:latest
@@ -106,8 +100,7 @@ services:
     network_mode: host
     volumes:
       - /home/chun/docker/plex/config:/config
-      - /mnt/nas1/shared/chun/files/Music:/media/TV
-      - /mnt/nas1/shared/chun/files/Music:/media/Movies
+      - /mnt/nas1/shared/chun/files/Movies:/media/Movies
       - /mnt/nas1/shared/chun/files/Music:/media/Music
     environment:
       - PUID=1000
@@ -121,7 +114,8 @@ services:
     container_name: nfs
     restart: unless-stopped
     volumes:
-      - /home/chun/Shared:/media/Shared
+      - /home/chun/shared:/media/shared
+      - /mnt/nas1/shared/chun/files:/media/nextcloud
       - /lib/modules:/lib/modules
       - /home/chun/docker/nfs/exports.txt:/etc/exports:ro
         #environment:
@@ -134,9 +128,9 @@ services:
     privileged: true
     network_mode: host
 
-  qbittorrent:
+  qb:
     image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+    container_name: qb
     environment:
       - PUID=1000
       - PGID=1000
@@ -145,7 +139,7 @@ services:
       - TORRENTING_PORT=6881
     volumes:
       - /home/chun/docker/qbittorrent/appdata:/config
-      - /home/chun/Downloads:/downloads #optional
+      - /home/chun/shared/downloads:/downloads #optional
     ports:
       - 83:8080
       - 6881:6881
