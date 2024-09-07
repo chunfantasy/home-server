@@ -105,8 +105,11 @@ services:
     network_mode: host
     volumes:
       - /home/chun/docker/plex/config:/config
-      - /mnt/nas1/shared/chun/files/Movies:/media/Movies
       - /mnt/nas1/shared/chun/files/Music:/media/Music
+      - /mnt/nas1/shared/chun/files/Movies:/media/Movies
+      - /mnt/nas1/shared/chun/files/Videos:/media/Videos
+    devices: 
+      - /dev/dri:/dev/dri
     environment:
       - PUID=1000
       - PGID=1000
