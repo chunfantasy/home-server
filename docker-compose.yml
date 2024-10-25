@@ -3,18 +3,18 @@ services:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: 'nginx'
     restart: unless-stopped
-    ports:
+      # ports:
       # These ports are in format <host-port>:<container-port>
       # - '80:80' # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
+      # - '443:443' # Public HTTPS Port
+      # - '81:81' # Admin Web Port
       # Add any other Stream port you want to expose
       # - '21:21' # FTP
-      - '82:82' #  drive.home.chun.no
-      - '6389:6389' #  drive.home.chun.no redis
-      - '82:82' #  qb.home.chun.no
-      - '8123:8123' #  ha.home.chun.no
-      - '32400:32400' #  plex.home.chun.no
+      # - '82:82' #  drive.home.chun.no
+      # - '6389:6389' #  drive.home.chun.no redis
+      # - '83:83' #  qb.home.chun.no
+      # - '8123:8123' #  ha.home.chun.no
+      # - '32400:32400' #  plex.home.chun.no
 
     # Uncomment the next line if you uncomment anything in the section
     # environment:
@@ -29,7 +29,7 @@ services:
       - /home/chun/docker/nginx/data:/data
       - /home/chun/docker/nginx/letsencrypt:/etc/letsencrypt
       - /home/chun/docker/nginx/custom:/etc/nginx/conf.d/custom
-        #    network_mode: host
+    network_mode: host
 
   wetty111:
     image: 'wettyoss/wetty'
@@ -107,7 +107,7 @@ services:
       - /home/chun/docker/plex/config:/config
       - /mnt/nas1/shared/chun/files/Music:/media/Music
       - /mnt/nas1/shared/chun/files/Movies:/media/Movies
-      - /mnt/nas1/shared/chun/files/Videos:/media/Videos
+      - /mnt/nas1/shared/chun/files/Media:/media/Media
     devices: 
       - /dev/dri:/dev/dri
     environment:
